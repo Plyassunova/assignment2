@@ -1,0 +1,79 @@
+@baseUrl = http://localhost:3000
+
+### Health check
+GET {{baseUrl}}/health
+
+> {%
+client.test("health endpoint responds with 200", function() {
+  client.assert(response.status === 200, "Expected 200 OK");
+});
+%}
+
+### Create student
+< {%
+request.variables.set("studentEmail", `alice+${$random.uuid}@example.com`)
+%}
+
+POST {{baseUrl}}/students
+Content-Type: application/json
+
+{
+  "name": "Alice Johnson",
+  "email": "{{studentEmail}}"
+}
+
+> {%
+client.test("student is created", function() {
+  client.assert(response.status === 201, "Expected 201 Created");
+  client.global.set("studentId", response.body.data.id);
+});
+%}
+
+### Create course
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{
+  "course_name": "Database Systems",
+  "instructor": "Dr. Smith",
+  "credit_hours": 3
+}
+
+> {%
+client.test("course is created", function() {
+  client.assert(response.status === 201, "Expected 201 Created");
+  client.global.set("courseId", response.body.data.id);
+});
+%}
+
+### Enroll student
+POST {{baseUrl}}/enrollments
+Content-Type: application/json
+
+{
+  "student_id": {{studentId}},
+  "course_id": {{courseId}},
+  "assignment1": 80,
+  "assignment2": 90,
+  "midterm_exam": 70,
+  "final_exam": 85,
+  "final_project": 100
+}
+
+> {%
+client.test("enrollment receives the expected final grade", function() {
+  client.assert(response.status === 201, "Expected 201 Created");
+  client.assert(response.body.data.final_grade === 82, "Expected final grade 82");
+  client.global.set("enrollmentId", response.body.data.id);
+});
+%}
+
+### Read enrollment
+GET {{baseUrl}}/enrollments/{{enrollmentId}}
+
+> {%
+client.test("enrollment can be retrieved", function() {
+  client.assert(response.status === 200, "Expected 200 OK");
+  client.assert(response.body.data.final_grade === 82, "Expected final grade 82");
+});
+%}
