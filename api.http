@@ -11,14 +11,14 @@ client.test("health endpoint responds with 200", function() {
 
 ### Create student
 < {%
-request.variables.set("studentEmail", `alice+${$random.uuid}@example.com`)
+request.variables.set("studentEmail", `alyona@mail.ru`)
 %}
 
 POST {{baseUrl}}/students
 Content-Type: application/json
 
 {
-  "name": "Alice Johnson",
+  "name": "Alyona Plyassunova",
   "email": "{{studentEmail}}"
 }
 
